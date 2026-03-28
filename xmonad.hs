@@ -16,10 +16,19 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Magnifier
 import XMonad.Layout.Roledex
 import XMonad.Layout.CircleEx
-import XMonad.Layout.Spiral
+import XMonad.Layout.Spiral hiding (CW)
 import XMonad.Layout.Dishes
+import XMonad.Layout.Reflect
+import XMonad.Layout.OneBig
+import XMonad.Layout.Monitor
+import XMonad.Layout.SimpleFloat
+import XMonad.Layout.Square
+import XMonad.Layout.FixedAspectRatio
+import XMonad.Layout.ResizeScreen
+import XMonad.Layout.Gaps
 
 import XMonad.Util.NamedScratchpad
+
 
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
@@ -31,9 +40,14 @@ myManageHook = composeAll
 
 -- 	=== LAYOUTS ===
 myLayouts =
- -- magnifierxy' 1 1 ( ResizableTall 1 (3/100) (1/2) [] )
- magnifierxy' 1 1 ( spiral 1 )
- ||| magnifierxy' 1 1 ( circle {cMasterRatio = 6%8, cStackRatio = 5%8, cDelta = 1*pi/4, cMultiplier = 5%6 } )
+ magnifiercz' 1 ( spiral 1 )
+ ||| (gaps [(L,120),(R,200)] $
+     magnifierxy' 1 1 $
+       circle { cMasterRatio = 6%8
+              , cStackRatio = 5%8
+              , cDelta = 1*pi/4
+              , cMultiplier = 5%6
+              })
  ||| noBorders Full
 
 -- 	=== MAIN ===
@@ -41,7 +55,7 @@ main :: IO ()
 main = xmonad myConfig
 
 myConfig = def
-        { modMask	= mod4Mask -- rebind to win
+  { modMask = mod4Mask -- rebind to win
 	, layoutHook 	= myLayouts
 	, manageHook	= myManageHook <+> manageHook def
 	, terminal	= "urxvt"
