@@ -10,7 +10,6 @@ import XMonad.Hooks.InsertPosition
 
 import XMonad.Layout.Grid
 import XMonad.Layout.ResizableTile
-import XMonad.Layout.ResizableThreeColumns
 import XMonad.Layout.Tabbed
 import XMonad.Layout.Accordion
 import XMonad.Layout.NoBorders
