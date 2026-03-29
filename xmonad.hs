@@ -26,8 +26,15 @@ import XMonad.Layout.Square
 import XMonad.Layout.FixedAspectRatio
 import XMonad.Layout.ResizeScreen
 import XMonad.Layout.Gaps
+import XMonad.Layout.SubLayouts
+import XMonad.Layout.WindowNavigation
 
 import XMonad.Util.NamedScratchpad
+
+-- TO ADD:
+-- - [ ] some way to toggle simpleFloat with keybind (instead of being a default)
+-- - [ ] keybind to change layout lists. different lists for differnt setups (like 4:3 16:9 vertical etc)
+-- - [ ] reading + notes layout
 
 
 -- 	=== MANAGE HOOK ===
@@ -36,7 +43,6 @@ myManageHook = composeAll
   [ isDialog --> doFloat
   ]
   <+> insertPosition Below Newer
-
 
 -- 	=== LAYOUTS ===
 myLayouts =
@@ -49,6 +55,7 @@ myLayouts =
               , cMultiplier = 5%6
               })
  ||| noBorders Full
+ ||| Accordion
 
 -- 	=== MAIN ===
 main :: IO ()
