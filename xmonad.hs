@@ -59,7 +59,8 @@ myLayouts =
               , cMultiplier = 5%6
               })
  ||| noBorders Full
- ||| Accordion
+ ||| magnifiercz 1 (gaps [(L,100),(R,100),(U,20),(D,20)] $ Accordion )
+-- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
 
 --	=== STARTUP HOOK ===
 myStartupHook = do
