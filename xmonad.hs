@@ -33,10 +33,20 @@ import XMonad.Layout.WindowNavigation
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.SpawnOnce
 
+-- == CURRENT REQUIREMENTS!
+-- - picom-simple-anims-git (compositor)
+-- - xdotool (gambiarra)
+-- - redshift (lightness)
+-- - xclip + scrot (clipboard)
+-- - xss-lock + xtrlock (lockscreen)
+
 -- TO ADD:
 -- - [ ] some way to toggle simpleFloat with keybind (instead of being a default)
 -- - [ ] keybind to change layout lists. different lists for differnt setups (like 4:3 16:9 vertical etc)
 -- - [ ] reading + notes layout
+-- - [ ] make proper compositor config 
+-- - [ ] make proper redshift config 
+-- - [ ] fix wallpaper code 
 
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
@@ -64,10 +74,11 @@ myLayouts =
 
 --	=== STARTUP HOOK ===
 myStartupHook = do
-  spawnOnce "redshift -l manual" -- light adjustment
+  spawnOnce "redshift -l 14.91:-23.52" -- light adjustment (set to praia cape verde)
   spawnOnce "xss-lock xtrlock"
-  spawnOnce "$HOME/.local/bin/wppsnow"
-  spawnOnce "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1366 768 windowmove 0 -3 "
+  spawnOnce "$HOME/.local/bin/wppsnow" -- TODO change this!
+  spawnOnce "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0" --TODO change this!
+  spawnOnce "pkill picom; picom --backend glx --vsync --animations --animation-window-mass 0.2 --animation-stiffness-in-tag 650 --animation-dampening 10 --animation-for-open-window none" --TODO change this!
 
 -- 	=== MAIN ===
 main :: IO ()
@@ -96,7 +107,7 @@ myConfig = def
 	, ("S-<Print>", spawn
 	"scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
 	-- window selector
-   	, ("M-<Tab>", goToSelected def)
+   	, ("M-<Tab>", goToSelected def )
    	-- scratchpad thning
    	, ("M-S-0", do 
 		withFocused (toggleDynamicNSP "dyn1")
@@ -111,5 +122,4 @@ myConfig = def
 	, ("<XF86ScreenSaver>", spawn "xtrlock")
 	-- disables exit
 	, ("M-S-q", return ()) ]
-
 
