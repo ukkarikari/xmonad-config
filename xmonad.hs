@@ -2,6 +2,7 @@ import XMonad
 import XMonad.Util.EZConfig
 import XMonad.Hooks.ManageHelpers
 import Data.Ratio
+import XMonad.Hooks.EwmhDesktops
 
 import XMonad.Actions.UpdatePointer
 import XMonad.Actions.GridSelect
@@ -30,17 +31,20 @@ import XMonad.Layout.SubLayouts
 import XMonad.Layout.WindowNavigation
 
 import XMonad.Util.NamedScratchpad
+import XMonad.Util.SpawnOnce
 
 -- TO ADD:
 -- - [ ] some way to toggle simpleFloat with keybind (instead of being a default)
 -- - [ ] keybind to change layout lists. different lists for differnt setups (like 4:3 16:9 vertical etc)
 -- - [ ] reading + notes layout
 
-
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
 myManageHook = composeAll
   [ isDialog --> doFloat
+  , className =? "Peek" --> doFloat
+  , className =? "Xmessage" --> doCenterFloat
+  , title =? "wpp" --> doIgnore -- ignore wallpaper
   ]
   <+> insertPosition Below Newer
 
@@ -57,14 +61,25 @@ myLayouts =
  ||| noBorders Full
  ||| Accordion
 
+--	=== STARTUP HOOK ===
+myStartupHook = do
+  spawnOnce "redshift -l manual" -- light adjustment
+  spawnOnce "xss-lock xtrlock"
+  spawnOnce "$HOME/.local/bin/wppsnow"
+  spawnOnce "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1366 768 windowmove 0 -3 "
+
 -- 	=== MAIN ===
 main :: IO ()
-main = xmonad myConfig
+main = xmonad
+       . ewmhFullscreen
+       . ewmh
+       $ myConfig
 
 myConfig = def
   { modMask = mod4Mask -- rebind to win
 	, layoutHook 	= myLayouts
 	, manageHook	= myManageHook <+> manageHook def
+	, startupHook	= myStartupHook
 	, terminal	= "urxvt"
 	, logHook 	= updatePointer (0.5, 0.5) (0, 0)
 	, focusFollowsMouse = False
@@ -74,6 +89,7 @@ myConfig = def
 	-- increase decrease slave size
 	  ("M-z", sendMessage MirrorShrink)
 	, ("M-a", sendMessage MirrorExpand)
+
 	-- printing utilities
 	, ("<Print>", spawn "scrot -f ~/Pictures/Screenshots/%F-%H%M%S.png")
 	, ("S-<Print>", spawn
@@ -90,6 +106,7 @@ myConfig = def
 	, ("M-S-=", sendMessage Toggle)
 	, ("M-=", sendMessage MagnifyMore)
 	, ("M--", sendMessage MagnifyLess)
+	-- locker
 	, ("<XF86ScreenSaver>", spawn "xtrlock")
 	-- disables exit
 	, ("M-S-q", return ()) ]
