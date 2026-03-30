@@ -47,6 +47,7 @@ import XMonad.Util.SpawnOnce
 -- - [ ] make proper compositor config 
 -- - [ ] make proper redshift config 
 -- - [ ] fix wallpaper code 
+-- - [ ] add xresources?
 
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
