@@ -62,6 +62,8 @@ myManageHook = composeAll
 -- 	=== LAYOUTS ===
 myLayouts =
  magnifiercz' 1 ( spiral 1 )
+ ||| magnifiercz 1 (gaps [(L,100),(R,100),(U,20),(D,20)] $ Accordion )
+ ||| noBorders Full
  ||| (gaps [(L,120),(R,200)] $
      magnifierxy' 1 1 $
        circle { cMasterRatio = 6%8
@@ -69,8 +71,8 @@ myLayouts =
               , cDelta = 1*pi/4
               , cMultiplier = 5%6
               })
- ||| noBorders Full
- ||| magnifiercz 1 (gaps [(L,100),(R,100),(U,20),(D,20)] $ Accordion )
+-- ||| Dishes 1 (3/100)
+-- ||| circle
 -- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
 
 --	=== STARTUP HOOK ===
