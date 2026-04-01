@@ -6,6 +6,7 @@ import XMonad.Hooks.EwmhDesktops
 
 import XMonad.Actions.UpdatePointer
 import XMonad.Actions.GridSelect
+import XMonad.Actions.WindowBringer
 
 import XMonad.Hooks.InsertPosition
 
@@ -62,7 +63,7 @@ myManageHook = composeAll
 -- 	=== LAYOUTS ===
 myLayouts =
  magnifiercz' 1 ( spiral 1 )
- ||| magnifiercz 1 (gaps [(L,100),(R,100),(U,20),(D,20)] $ Accordion )
+ ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,00),(D,00)] $ Accordion )
  ||| noBorders Full
  ||| (gaps [(L,120),(R,200)] $
      magnifierxy' 1 1 $
@@ -74,6 +75,7 @@ myLayouts =
 -- ||| Dishes 1 (3/100)
 -- ||| circle
 -- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
+
 
 --	=== STARTUP HOOK ===
 myStartupHook = do
@@ -98,6 +100,8 @@ myConfig = def
 	, terminal	= "urxvt"
 	, logHook 	= updatePointer (0.5, 0.5) (0, 0)
 	, focusFollowsMouse = False
+	, normalBorderColor = "#888888"
+	, focusedBorderColor = "#ffffff"
 	}
 	`additionalKeysP`
 	[
@@ -111,6 +115,7 @@ myConfig = def
 	"scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
 	-- window selector
    	, ("M-<Tab>", goToSelected def )
+   	--, ("M-<Tab>", bringMenu )
    	-- scratchpad thning
    	, ("M-S-0", do 
 		withFocused (toggleDynamicNSP "dyn1")
