@@ -50,7 +50,7 @@ import XMonad.Util.SpawnOnce
 -- - [ ] fix wallpaper code 
 -- - [ ] add xresources?
 -- - [ ] grid layout with custom keybind to toggle magnifier
-
+1
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
 myManageHook = composeAll
@@ -63,8 +63,9 @@ myManageHook = composeAll
 
 -- 	=== LAYOUTS ===
 myLayouts =
- magnifiercz' 1 ( spiral 1 )
- ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,00),(D,00)] $ Accordion )
+     magnifiercz' 1 ( spiral 1 )
+ ||| gaps [(L,120),(R,200)] ( magnifiercz' 1 ( Grid ) )
+ ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] $ Accordion )
  ||| noBorders Full
  ||| (gaps [(L,120),(R,200)] $
      magnifierxy' 1 1 $
@@ -73,9 +74,8 @@ myLayouts =
               , cDelta = 1*pi/4
               , cMultiplier = 5%6
               })
- ||| gaps [(L,120),(R,200)] ( magnifiercz' 1 ( Grid ) )
 -- ||| Dishes 1 (3/100)
--- ||| circle
+ ||| circle
 -- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
 
 
@@ -85,7 +85,7 @@ myStartupHook = do
   spawnOnce "xss-lock xtrlock"
   spawnOnce "$HOME/.local/bin/wppsnow" -- TODO change this!
   spawnOnce "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0" --TODO change this!
-  spawnOnce "pkill picom; picom --backend glx --vsync --animations --animation-window-mass 0.2 --animation-stiffness-in-tag 650 --animation-dampening 10 --animation-for-open-window none" --TODO change this!
+  spawnOnce "pkill picom ; picom --backend glx --fading --fade-delta 2 --shadow --config tmp-config" --TODO change this!
 
 -- 	=== MAIN ===
 main :: IO ()
