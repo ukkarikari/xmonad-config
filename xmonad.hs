@@ -49,6 +49,7 @@ import XMonad.Util.SpawnOnce
 -- - [ ] make proper redshift config 
 -- - [ ] fix wallpaper code 
 -- - [ ] add xresources?
+-- - [ ] grid layout with custom keybind to toggle magnifier
 
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
@@ -72,6 +73,7 @@ myLayouts =
               , cDelta = 1*pi/4
               , cMultiplier = 5%6
               })
+ ||| gaps [(L,120),(R,200)] ( magnifiercz' 1 ( Grid ) )
 -- ||| Dishes 1 (3/100)
 -- ||| circle
 -- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
