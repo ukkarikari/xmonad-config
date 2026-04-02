@@ -50,7 +50,7 @@ import XMonad.Util.SpawnOnce
 -- - [ ] fix wallpaper code 
 -- - [ ] add xresources?
 -- - [ ] grid layout with custom keybind to toggle magnifier
-1
+
 -- 	=== MANAGE HOOK ===
 myManageHook :: ManageHook
 myManageHook = composeAll
@@ -75,7 +75,7 @@ myLayouts =
               , cMultiplier = 5%6
               })
 -- ||| Dishes 1 (3/100)
- ||| circle
+-- ||| circle
 -- ||| magnifiercz 1 (gaps [(L,25),(R,300),(U,10),(D,100)] $ Roledex )
 
 
