@@ -92,7 +92,7 @@ myDzenCmd =
   "dzen2" 
   ++ " -dock"
   ++ " -ta l"
-  ++ " -fn PixelCarnageMonoTT-9"
+  ++ " -fn ProggySquareTT-12"
   ++ " -bg #000000"
 
 
