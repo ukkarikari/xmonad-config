@@ -21,25 +21,37 @@ import XMonad.Hooks.InsertPosition
 -- bar
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
+import XMonad.Util.Run (spawnPipe)
+import System.IO (hPutStrLn)
+import XMonad.Hooks.ManageDocks
 
 
---  ========= MAIN =========
+-- ++++++++++ MAIN +++++++++++
 main :: IO ()
-main =
+main = do
+  dzen <- spawnPipe myDzenCmd -- (this is like 'stdin | myDzenCmd') its kind of an "entry point"
   xmonad
+    . docks
     . ewmh
-    . xmobarProp
-    $ myConfig
+    -- . xmobarProp
+    $ myConfig dzen 
+
 
 -- ++++++++++ CONFIGURATION +++++++++
-myConfig = def
+-- myConfig is type "XConfig Layout". by adding dzen we are doing:
+--     myConfig :: Handle -> XConfig Layout 
+-- muConfig is now a funton that takes a Hanlde (dzen) and returns a XConfig Layout
+--
+myConfig dzen = def
   {
     modMask = mod4Mask -- rebind alt to win
   , layoutHook  = myLayouts
-  , manageHook  = myManageHook <+> manageHook def
+  , manageHook  = myManageHook <+> manageDocks <+> manageHook def
   , startupHook = myStartupHook
   , terminal  = "urxvt"
-  , logHook = updatePointer (0.5, 0.5) (0, 0)
+-- in here, logHook creates a String based on the current xmonad state
+-- ppOutput
+  , logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0) 
   , focusFollowsMouse = False
   , normalBorderColor = "#888888"
   , focusedBorderColor = "#ffffff"
@@ -47,9 +59,10 @@ myConfig = def
   `additionalKeysP` myKeybs ++ [("M-S-q", return ())] -- disable default exit keybind
 
 
+
 --  ========= LAYOUTS =========
-myLayouts =
- magnifiercz' 1 $ ResizableThreeCol 1 (3/100) (1/2) [] -- to do: if 3 win, do rtcm
+myLayouts =  
+ avoidStruts $ magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
  ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
  ||| noBorders Full
  ||| meinKreis
@@ -66,17 +79,36 @@ meinKreis =
              })
 
 
+-- ========= PRETTY PRINTER and DZEN  =========
+myPP h = def
+  {
+  -- ppOutput = hPutStrLn h --output will be argument as string
+  ppOutput = \s -> hPutStrLn h ("I AM LEARNING " ++ s)
+  } 
+
+
+myDzenCmd :: String
+myDzenCmd = 
+  "dzen2" 
+  ++ " -dock"
+  ++ " -ta l"
+  ++ " -fn PixelCarnageMonoTT-9"
+  ++ " -bg #000000"
+
+
 -- ========= STARTUP HOOK =========
 myStartupHook = 
-  mapM_ spawnOnce
-  [
+  mapM_ spawnOnce [
   -- lock xss cmd
     "xss-lock xtrlock"
+
   -- compositor cmd
-  , "pkill picom ; picom --backend glx --fading --fade-delta 2 --shadow --config tmp-config"
+  , "pkill picom ; picom --backend glx --fading --fade-delta 2 --config tmp-config"
+
   -- night light command
   , "redshift -l 14.91:-23.52"
-  -- TODO edit the wpp src and change this botch
+  
+  --    TODO edit the wpp src and change this botch
   -- , "$HOME/.local/bin/wppsnow"
   -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
   ]
@@ -88,6 +120,7 @@ myManageHook = composeAll
   [ isDialog --> doFloat
   , className =? "Peek" --> doFloat
   , className =? "Xmessage" --> doCenterFloat
+  , className =? "dzen2" --> doIgnore
   , title =? "wpp" --> doIgnore -- ignore wallpaper
   ]
   <+> insertPosition Below Newer
@@ -100,26 +133,26 @@ myKeybs =
   ++miscKeybs
 
 -- ------------------------------
-windowKeybs =
-  [ 
+windowKeybs = [ 
   -- increase/decrease slave size
     ("M-z", sendMessage MirrorShrink)
   , ("M-a", sendMessage MirrorExpand)
+
   -- mafnifier keys
   , ("M-S-=", sendMessage Toggle)
   , ("M-=", sendMessage MagnifyMore)
   , ("M--", sendMessage MagnifyLess)
+
   -- scratchpad thning
   , ("M-S-0", do 
     withFocused (toggleDynamicNSP "dyn1")
-    dynamicNSPAction "dyn1"
-  )
+    dynamicNSPAction "dyn1")
   , ("M-0", dynamicNSPAction "dyn1")
+  -- toggle dock
+  , ("M-m", sendMessage ToggleStruts)
   ]
 
--- ------------------------------ 
-utilityKeybs =
-  [
+utilityKeybs = [
   -- screenshot tools
     ("<Print>", spawn "scrot -f ~/Pictures/Screenshots/%F-%H%M%S.png")
   , ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
@@ -127,28 +160,8 @@ utilityKeybs =
   , ("<XF86ScreenSaver>", spawn "xtrlock")
   ]
 
--- ------------------------------ 
-miscKeybs =
-  [
+miscKeybs = [
   -- TODO change this to be a workspace selector
     ("M-<Tab>", goToSelected def )
   ]
 
-
--- --------------------------------------------------------
-
--- == CURRENT REQUIREMENTS!
--- - picom-simple-anims-git (compositor)
--- - xdotool (gambiarra)
--- - redshift (lightness)
--- - xclip + scrot (clipboard)
--- - xss-lock + xtrlock (lockscreen)
-
--- TO ADD:
--- - [ ] some way to toggle simpleFloat with keybind (instead of being a default)
--- - [ ] keybind to change layout lists. different lists for differnt setups (like 4:3 16:9 vertical etc)
--- - [x] reading + notes layout
--- - [ ] make proper compositor config 
--- - [ ] fix wallpaper code 
--- - [ ] add xresources?
--- - [ ] grid layout with custom keybind to toggle magnifier
