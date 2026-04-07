@@ -18,6 +18,7 @@ import XMonad.Util.SpawnOnce
 import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.InsertPosition
+import XMonad.Util.Run (safeSpawn)
 -- bar
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
@@ -97,21 +98,22 @@ myDzenCmd =
 
 
 -- ========= STARTUP HOOK =========
-myStartupHook = 
+myStartupHook = do
+  spawnOnce "redshift -r -l manual" 
   mapM_ spawnOnce [
   -- lock xss cmd
     "xss-lock xtrlock"
 
   -- compositor cmd
-  , "pkill picom ; picom --backend glx --fading --fade-delta 2 --config tmp-config"
+    , "pkill picom ; picom --backend glx --fading --fade-delta 2 --config tmp-config"
 
   -- night light command
-  , "redshift -l 14.91:-23.52"
+  --, "redshift -r -l '14.91:-23.52'"
   
   --    TODO edit the wpp src and change this botch
   -- , "$HOME/.local/bin/wppsnow"
   -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
-  ]
+    ]
   
 
 --  ========= MANAGE HOOK =========
