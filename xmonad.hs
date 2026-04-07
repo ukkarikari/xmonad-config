@@ -9,6 +9,7 @@ import XMonad.Layout.ResizableThreeColumns
 import XMonad.Layout.Accordion
 import XMonad.Layout.CircleEx
 import XMonad.Actions.GridSelect
+import XMonad.Layout.Renamed
 -- utils
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Magnifier
@@ -18,13 +19,12 @@ import XMonad.Util.SpawnOnce
 import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.InsertPosition
-import XMonad.Util.Run ( safeSpawn, spawnPipe )
+import XMonad.Util.Run ( safeSpawn, spawnPipe, runProcessWithInput )
 -- bar
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
 import System.IO (hPutStrLn)
 import XMonad.Hooks.ManageDocks
-
 
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
@@ -38,24 +38,41 @@ main = do
 
 
 -- ========= PRETTY PRINTER and DZEN  =========
+-- [main] -> [myConfig] -> [logHook] -> [myPP] -> [dzen2 process] 
+-- ============================================
+-- https://hackage-content.haskell.org/package/xmonad-contrib-0.18.2/docs/XMonad-Hooks-StatusBar-PP.html
 myPP h = def
-  {
-  ppOutput = \s -> hPutStrLn h ("I AM LEARNING " ++ s)
-  } 
+  { ppOutput = hPutStrLn h
+  , ppCurrent = dzenColor "#000000" "#f9f9f9" . wrap " " " "
+  , ppHidden = wrap " " " "
+  , ppTitle = dzenColor "#000000" "#f9f9f9" . wrap " " " "
+  , ppSep = " "
+  , ppExtras = [ myCommand ]
+  }
+
+myCommand :: X (Maybe String)
+myCommand = do
+  result <- runProcessWithInput "date" [] ""
+  -- result <- runProcessWithInput "tail" ["/sys/class/power_supply/BAT0/capacity"] ""
+  return (Just (init result))
 
 
 myDzenCmd :: String
 myDzenCmd = 
   "dzen2" 
   ++ " -dock"
-  ++ " -ta l"
-  ++ " -fn ProggySquareTT-12"
+  ++ " -ta r"
+  ++ " -fn Cozette:size=10:style=Bold"
   ++ " -bg #000000"
+
+-- ---- new bars experiment ---
+-- idea: http://gotmor.googlepages.com/dzen
+
 
 
 --  ========= LAYOUTS =========
-myLayouts =  
- avoidStruts $ magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
+myLayouts = avoidStruts $
+ magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
  ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
  ||| noBorders Full
  ||| meinKreis
@@ -63,13 +80,14 @@ myLayouts =
 
 --  --------- specific definitions --------- 
 meinKreis =
- gaps [(L,120),(R,200),(U,20),(D,20)] (
-    magnifierxy' 1 1 $
-      circle { cMasterRatio = 2%8
-             , cStackRatio = 3%8
-             , cMultiplier = 6%7
-             , cDelta = 1*pi/4
-             })
+  renamed [CutWordsLeft 10, Replace "circle"] $ 
+    gaps [(L,120),(R,200),(U,20),(D,20)] (
+      magnifierxy' 1 1 $
+        circle { cMasterRatio = 2%8
+               , cStackRatio = 3%8
+               , cMultiplier = 6%7
+               , cDelta = 1*pi/4
+               })
 
 
 -- ========= STARTUP HOOK =========

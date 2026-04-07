@@ -7,6 +7,7 @@
  - xclip + scrot (clipboard)
  - xss-lock + xtrlock (lockscreen)
  - dzen2
+ - ProggyFonts, Unifont, cozette
 
 ### TO LEARN:
  - [ ] Xmonad specific types (like X() and logHook)
