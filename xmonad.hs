@@ -18,11 +18,10 @@ import XMonad.Util.SpawnOnce
 import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.InsertPosition
-import XMonad.Util.Run (safeSpawn)
+import XMonad.Util.Run ( safeSpawn, spawnPipe )
 -- bar
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
-import XMonad.Util.Run (spawnPipe)
 import System.IO (hPutStrLn)
 import XMonad.Hooks.ManageDocks
 
@@ -30,7 +29,7 @@ import XMonad.Hooks.ManageDocks
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
 main = do
-  dzen <- spawnPipe myDzenCmd -- (this is like 'stdin | myDzenCmd') its kind of an "entry point"
+  dzen <- spawnPipe myDzenCmd
   xmonad
     . docks
     . ewmh
@@ -38,27 +37,20 @@ main = do
     $ myConfig dzen 
 
 
--- ++++++++++ CONFIGURATION +++++++++
--- myConfig is type "XConfig Layout". by adding dzen we are doing:
---     myConfig :: Handle -> XConfig Layout 
--- muConfig is now a funton that takes a Hanlde (dzen) and returns a XConfig Layout
---
-myConfig dzen = def
+-- ========= PRETTY PRINTER and DZEN  =========
+myPP h = def
   {
-    modMask = mod4Mask -- rebind alt to win
-  , layoutHook  = myLayouts
-  , manageHook  = myManageHook <+> manageDocks <+> manageHook def
-  , startupHook = myStartupHook
-  , terminal  = "urxvt"
--- in here, logHook creates a String based on the current xmonad state
--- ppOutput
-  , logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0) 
-  , focusFollowsMouse = False
-  , normalBorderColor = "#888888"
-  , focusedBorderColor = "#ffffff"
-  }
-  `additionalKeysP` myKeybs ++ [("M-S-q", return ())] -- disable default exit keybind
+  ppOutput = \s -> hPutStrLn h ("I AM LEARNING " ++ s)
+  } 
 
+
+myDzenCmd :: String
+myDzenCmd = 
+  "dzen2" 
+  ++ " -dock"
+  ++ " -ta l"
+  ++ " -fn ProggySquareTT-12"
+  ++ " -bg #000000"
 
 
 --  ========= LAYOUTS =========
@@ -78,23 +70,6 @@ meinKreis =
              , cMultiplier = 6%7
              , cDelta = 1*pi/4
              })
-
-
--- ========= PRETTY PRINTER and DZEN  =========
-myPP h = def
-  {
-  -- ppOutput = hPutStrLn h --output will be argument as string
-  ppOutput = \s -> hPutStrLn h ("I AM LEARNING " ++ s)
-  } 
-
-
-myDzenCmd :: String
-myDzenCmd = 
-  "dzen2" 
-  ++ " -dock"
-  ++ " -ta l"
-  ++ " -fn ProggySquareTT-12"
-  ++ " -bg #000000"
 
 
 -- ========= STARTUP HOOK =========
@@ -166,4 +141,20 @@ miscKeybs = [
   -- TODO change this to be a workspace selector
     ("M-<Tab>", goToSelected def )
   ]
+
+
+-- ++++++++++ CONFIGURATION +++++++++
+myConfig dzen = def
+  {
+    modMask = mod4Mask -- rebind alt to win
+  , layoutHook  = myLayouts
+  , manageHook  = myManageHook <+> manageDocks <+> manageHook def
+  , startupHook = myStartupHook
+  , logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0) 
+  , focusFollowsMouse = False
+  , terminal  = "urxvt"
+  , normalBorderColor = "#888888"
+  , focusedBorderColor = "#ffffff"
+  }
+  `additionalKeysP` myKeybs ++ [("M-S-q", return ())] -- disable default exit keybind
 
