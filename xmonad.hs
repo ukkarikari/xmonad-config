@@ -28,6 +28,10 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
 import System.IO (hPutStrLn)
 import XMonad.Hooks.ManageDocks
+-- temp
+import XMonad.Layout.Combo
+import XMonad.Layout.Dishes
+
 
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
@@ -84,6 +88,7 @@ myWorkspaces =
 myLayouts =
   avoidStruts $
     onWorkspace "code"  codeLayouts $
+    onWorkspace "web"  webLayouts $
     onWorkspace "sys"   sysLayouts $   
     onWorkspace "chat"   chatLayouts $   
     defaultLayout
@@ -92,21 +97,21 @@ codeLayouts =
       magnifiercz' 1.3 $ ResizableThreeColMid 1 (3/100) (3/5) []
   ||| Full
 
+webLayouts =
+      Accordion
+  ||| Mirror Accordion
+
 sysLayouts =
       meinKreis
   ||| Grid
+--  ||| combineTwo (Tall 1 (3/100) (1/2)) (Grid) (Mirror Accordion)
+
 
 chatLayouts =
     magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
 
-defaultLayout = noBorders Full
-
--- myLayouts = avoidStruts $
---  magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
---  ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
---  ||| noBorders Full
---  ||| meinKreis
-
+defaultLayout = 
+  noBorders Full
 
 --  --------- specific definitions --------- 
 meinKreis =
@@ -130,9 +135,6 @@ myStartupHook = do
   -- compositor cmd
     , "pkill picom ; picom --backend glx --fading --fade-delta 2 --config tmp-config"
 
-  -- night light command
-  --, "redshift -r -l '14.91:-23.52'"
-  
   --    TODO edit the wpp src and change this botch
   -- , "$HOME/.local/bin/wppsnow"
   -- , "sleep 2 ; xdotool search --name \"wpp\" windowlower windowsize 1440 900 windowmove 0 0"
