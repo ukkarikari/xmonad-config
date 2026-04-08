@@ -60,7 +60,6 @@ myCommand = do
   -- result <- runProcessWithInput "tail" ["/sys/class/power_supply/BAT0/capacity"] ""
   return (Just (init result))
 
-
 myDzenCmd :: String
 myDzenCmd = 
   "dzen2" 
@@ -82,7 +81,6 @@ myWorkspaces =
 
 
 --  ========= LAYOUTS =========
-
 myLayouts =
   avoidStruts $
     onWorkspace "code"  codeLayouts $
@@ -184,8 +182,10 @@ utilityKeybs = [
   -- screenshot tools
     ("<Print>", spawn "scrot -f ~/Pictures/Screenshots/%F-%H%M%S.png")
   , ("S-<Print>", spawn "scrot -s -e 'xclip -selection clipboard -t image/png -i $f' -f /var/tmp/%F-%H%M%S.png")
-  -- scren lock
+  -- screen lock
   , ("<XF86ScreenSaver>", spawn "xtrlock")
+  -- dmenu
+  , ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette-10")
   ]
 
 miscKeybs = [
@@ -206,16 +206,17 @@ workspaceKeybs = [
   , ("M-S-9", moveAndFollow "notes")
   ]
 
-moveAndFollow ws = 
-  windows (W.shift ws) >> windows (W.greedyView ws)
-
 myRemovedKeys = [
     "M-S-q" --disable default exit
+  , "M-p"   --disable default dmenu
   , "M-3", "M-S-3"
   , "M-4", "M-S-4"
   , "M-5", "M-S-5"
   , "M-6", "M-S-6"
   ]
+
+moveAndFollow ws = 
+  windows (W.shift ws) >> windows (W.greedyView ws)
 
 -- ++++++++++ CONFIGURATION +++++++++
 myConfig dzen = def
