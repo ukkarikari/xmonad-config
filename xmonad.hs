@@ -10,6 +10,8 @@ import XMonad.Layout.Accordion
 import XMonad.Layout.CircleEx
 import XMonad.Actions.GridSelect
 import XMonad.Layout.Renamed
+import XMonad.Layout.PerWorkspace
+import XMonad.Layout.Grid
 -- utils
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Magnifier
@@ -20,6 +22,7 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Actions.UpdatePointer
 import XMonad.Hooks.InsertPosition
 import XMonad.Util.Run ( safeSpawn, spawnPipe, runProcessWithInput )
+import XMonad.StackSet as W hiding (workspaces)
 -- bar
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
@@ -43,6 +46,7 @@ main = do
 -- https://hackage-content.haskell.org/package/xmonad-contrib-0.18.2/docs/XMonad-Hooks-StatusBar-PP.html
 myPP h = def
   { ppOutput = hPutStrLn h
+  , ppOrder = \(ws:l:t:ex) -> [t, l, ws] ++ ex
   , ppCurrent = dzenColor "#000000" "#f9f9f9" . wrap " " " "
   , ppHidden = wrap " " " "
   , ppTitle = dzenColor "#000000" "#f9f9f9" . wrap " " " "
@@ -65,17 +69,45 @@ myDzenCmd =
   ++ " -fn Cozette:size=10:style=Bold"
   ++ " -bg #000000"
 
--- ---- new bars experiment ---
--- idea: http://gotmor.googlepages.com/dzen
 
+-- ========== WORKSPACES =======
+myWorkspaces :: [WorkspaceId]
+myWorkspaces = 
+  [ "code"
+  , "web"
+  , "chat"
+  , "sys"
+  , "notes"
+  ]
 
 
 --  ========= LAYOUTS =========
-myLayouts = avoidStruts $
- magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
- ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
- ||| noBorders Full
- ||| meinKreis
+
+myLayouts =
+  avoidStruts $
+    onWorkspace "code"  codeLayouts $
+    onWorkspace "sys"   sysLayouts $   
+    onWorkspace "chat"   chatLayouts $   
+    defaultLayout
+
+codeLayouts =
+      magnifiercz' 1.3 $ ResizableThreeColMid 1 (3/100) (3/5) []
+  ||| Full
+
+sysLayouts =
+      meinKreis
+  ||| Grid
+
+chatLayouts =
+    magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
+
+defaultLayout = noBorders Full
+
+-- myLayouts = avoidStruts $
+--  magnifiercz' 1.3 $ ResizableThreeCol 1 (3/100) (3/5) [] -- TODO: if 3 win, do centerMid
+--  ||| magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
+--  ||| noBorders Full
+--  ||| meinKreis
 
 
 --  --------- specific definitions --------- 
@@ -83,10 +115,10 @@ meinKreis =
   renamed [CutWordsLeft 10, Replace "circle"] $ 
     gaps [(L,120),(R,200),(U,20),(D,20)] (
       magnifierxy' 1 1 $
-        circle { cMasterRatio = 2%8
+        circleEx { cMasterRatio = 4%8
                , cStackRatio = 3%8
                , cMultiplier = 6%7
-               , cDelta = 1*pi/4
+               , cDelta = 2.2*pi/4
                })
 
 
@@ -126,6 +158,7 @@ myKeybs =
   windowKeybs
   ++utilityKeybs
   ++miscKeybs
+  ++workspaceKeybs
 
 -- ------------------------------
 windowKeybs = [ 
@@ -144,7 +177,7 @@ windowKeybs = [
     dynamicNSPAction "dyn1")
   , ("M-0", dynamicNSPAction "dyn1")
   -- toggle dock
-  , ("M-m", sendMessage ToggleStruts)
+  , ("M-S-m", sendMessage ToggleStruts)
   ]
 
 utilityKeybs = [
@@ -160,6 +193,29 @@ miscKeybs = [
     ("M-<Tab>", goToSelected def )
   ]
 
+workspaceKeybs = [
+    ("M-1", windows $ W.greedyView "code")
+  , ("M-S-1", moveAndFollow "code")
+  , ("M-2", windows $ W.greedyView "web")
+  , ("M-S-2", moveAndFollow "web")
+  , ("M-7", windows $ W.greedyView "chat")
+  , ("M-S-7", moveAndFollow "chat")
+  , ("M-8", windows $ W.greedyView "sys")
+  , ("M-S-8", moveAndFollow "sys")
+  , ("M-9", windows $ W.greedyView "notes")
+  , ("M-S-9", moveAndFollow "notes")
+  ]
+
+moveAndFollow ws = 
+  windows (W.shift ws) >> windows (W.greedyView ws)
+
+myRemovedKeys = [
+    "M-S-q" --disable default exit
+  , "M-3", "M-S-3"
+  , "M-4", "M-S-4"
+  , "M-5", "M-S-5"
+  , "M-6", "M-S-6"
+  ]
 
 -- ++++++++++ CONFIGURATION +++++++++
 myConfig dzen = def
@@ -168,11 +224,12 @@ myConfig dzen = def
   , layoutHook  = myLayouts
   , manageHook  = myManageHook <+> manageDocks <+> manageHook def
   , startupHook = myStartupHook
-  , logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0) 
+  , logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0)
+  , workspaces = myWorkspaces
   , focusFollowsMouse = False
   , terminal  = "urxvt"
   , normalBorderColor = "#888888"
   , focusedBorderColor = "#ffffff"
   }
-  `additionalKeysP` myKeybs ++ [("M-S-q", return ())] -- disable default exit keybind
-
+  `removeKeysP` myRemovedKeys
+  `additionalKeysP` myKeybs
