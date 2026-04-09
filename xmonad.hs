@@ -58,6 +58,7 @@ myPP h = def
   , ppExtras = [ myCommand ]
   }
 
+
 myCommand :: X (Maybe String)
 myCommand = do
   result <- runProcessWithInput "date" [] ""
@@ -88,7 +89,7 @@ myWorkspaces =
 myLayouts =
   avoidStruts $
     onWorkspace "code"  codeLayouts $
-    onWorkspace "web"  webLayouts $
+    onWorkspace "notes"  webLayouts $
     onWorkspace "sys"   sysLayouts $   
     onWorkspace "chat"   chatLayouts $   
     defaultLayout
