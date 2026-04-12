@@ -29,9 +29,12 @@ import XMonad.Hooks.StatusBar
 import System.IO (hPutStrLn)
 import XMonad.Hooks.ManageDocks
 -- temp
-import XMonad.Layout.Combo
+import XMonad.Layout.ComboP
 import XMonad.Layout.Dishes
-
+import XMonad.Layout.Tabbed
+import XMonad.Layout.TwoPane
+import XMonad.Layout.Reflect
+import XMonad.Layout.WindowNavigation
 
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
@@ -55,15 +58,27 @@ myPP h = def
   , ppHidden = wrap " " " "
   , ppTitle = dzenColor "#000000" "#f9f9f9" . wrap " " " "
   , ppSep = " "
-  , ppExtras = [ myCommand ]
+  , ppExtras = [ myCommand, myVolume, mySpace ]
   }
 
+mySpace :: X (Maybe String)
+mySpace = do
+  return (Just (" "))
 
 myCommand :: X (Maybe String)
 myCommand = do
   result <- runProcessWithInput "date" [] ""
   -- result <- runProcessWithInput "tail" ["/sys/class/power_supply/BAT0/capacity"] ""
   return (Just (init result))
+
+myVolume :: X (Maybe String)
+myVolume = do
+  out <- runProcessWithInput "wpctl" ["get-volume", "@DEFAULT_AUDIO_SINK@"] ""
+  let status = if "[MUTED]" `elem` words out
+                then "☏"
+                else "☎"
+  return (Just status)
+
 
 myDzenCmd :: String
 myDzenCmd = 
@@ -81,7 +96,6 @@ myWorkspaces =
   , "web"
   , "chat"
   , "sys"
-  , "notes"
   ]
 
 
@@ -89,13 +103,13 @@ myWorkspaces =
 myLayouts =
   avoidStruts $
     onWorkspace "code"  codeLayouts $
-    onWorkspace "notes"  webLayouts $
+    onWorkspace "web"  webLayouts $
     onWorkspace "sys"   sysLayouts $   
     onWorkspace "chat"   chatLayouts $   
     defaultLayout
 
 codeLayouts =
-      magnifiercz' 1.3 $ ResizableThreeColMid 1 (3/100) (3/5) []
+      tempCombo
   ||| Full
 
 webLayouts =
@@ -105,8 +119,6 @@ webLayouts =
 sysLayouts =
       meinKreis
   ||| Grid
---  ||| combineTwo (Tall 1 (3/100) (1/2)) (Grid) (Mirror Accordion)
-
 
 chatLayouts =
     magnifiercz 1 (gaps [(L,45),(R,45),(U,5),(D,00)] Accordion )
@@ -125,6 +137,22 @@ meinKreis =
                , cDelta = 2.2*pi/4
                })
 
+tempCombo =
+  renamed [CutWordsLeft 10, Replace "weirdCombo"] $
+    magnifiercz' 1.3 ( combineTwoP
+      (TwoPane (3/100) (3/5)) (Full)
+        (tabbedBottom shrinkText myTabConfig)
+            (ClassName "librewolf")
+      )
+    
+myTabConfig = def {
+    activeColor = "#000000"
+  , inactiveColor = "#000000"
+  , activeTextColor = "#FFFFFF"
+  , inactiveTextColor = "#a2a2a2"
+  , inactiveBorderColor = "#a2a2a2"
+  , fontName = "Cozette"
+}
 
 -- ========= STARTUP HOOK =========
 myStartupHook = do
@@ -189,6 +217,9 @@ utilityKeybs = [
   , ("<XF86ScreenSaver>", spawn "xtrlock")
   -- dmenu
   , ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette-10")
+  , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
+  , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
+  , ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
   ]
 
 miscKeybs = [
@@ -198,15 +229,13 @@ miscKeybs = [
 
 workspaceKeybs = [
     ("M-1", windows $ W.greedyView "code")
-  , ("M-S-1", moveAndFollow "code")
+  , ("M-S-1", windows (W.shift "code"))
   , ("M-2", windows $ W.greedyView "web")
-  , ("M-S-2", moveAndFollow "web")
+  , ("M-S-2", windows (W.shift "web"))
   , ("M-7", windows $ W.greedyView "chat")
-  , ("M-S-7", moveAndFollow "chat")
+  , ("M-S-7", windows (W.shift "chat"))
   , ("M-8", windows $ W.greedyView "sys")
-  , ("M-S-8", moveAndFollow "sys")
-  , ("M-9", windows $ W.greedyView "notes")
-  , ("M-S-9", moveAndFollow "notes")
+  , ("M-S-8", windows (W.shift "sys"))
   ]
 
 myRemovedKeys = [
@@ -216,10 +245,11 @@ myRemovedKeys = [
   , "M-4", "M-S-4"
   , "M-5", "M-S-5"
   , "M-6", "M-S-6"
+  , "M-9", "M-S-9"
   ]
 
 moveAndFollow ws = 
-  windows (W.shift ws) >> windows (W.greedyView ws)
+  windows (W.shift ws)
 
 -- ++++++++++ CONFIGURATION +++++++++
 myConfig dzen = def
