@@ -28,17 +28,12 @@ import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.StatusBar
 import System.IO (hPutStrLn)
 import XMonad.Hooks.ManageDocks
--- temp
-import XMonad.Layout.ComboP
-import XMonad.Layout.Dishes
-import XMonad.Layout.Tabbed
-import XMonad.Layout.TwoPane
-import XMonad.Layout.Reflect
-import XMonad.Layout.WindowNavigation
+
 
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
 main = do
+  spawn "xrdb -merge $HOME/.Xresources"
   dzen <- spawnPipe myDzenCmd
   xmonad
     . docks
@@ -50,7 +45,18 @@ main = do
 -- ========= PRETTY PRINTER and DZEN  =========
 -- [main] -> [myConfig] -> [logHook] -> [myPP] -> [dzen2 process] 
 -- ============================================
--- https://hackage-content.haskell.org/package/xmonad-contrib-0.18.2/docs/XMonad-Hooks-StatusBar-PP.html
+ 
+-- ---------- dzen command ----------
+myDzenCmd :: String
+myDzenCmd = 
+  "dzen2" 
+  ++ " -dock"
+  ++ " -ta r"
+  ++ " -fn Cozette:bold:size=10"
+  ++ " -bg #000000"
+
+
+-- ---------- pretty printer ----------
 myPP h = def
   { ppOutput = hPutStrLn h
   , ppOrder = \(ws:l:t:ex) -> [t, l, ws] ++ ex
@@ -61,16 +67,18 @@ myPP h = def
   , ppExtras = [ myCommand, myVolume, mySpace ]
   }
 
+-- just another space
 mySpace :: X (Maybe String)
 mySpace = do
   return (Just (" "))
 
+-- command segment
 myCommand :: X (Maybe String)
 myCommand = do
   result <- runProcessWithInput "date" [] ""
-  -- result <- runProcessWithInput "tail" ["/sys/class/power_supply/BAT0/capacity"] ""
   return (Just (init result))
 
+-- volume indicator
 myVolume :: X (Maybe String)
 myVolume = do
   out <- runProcessWithInput "wpctl" ["get-volume", "@DEFAULT_AUDIO_SINK@"] ""
@@ -78,15 +86,6 @@ myVolume = do
                 then "☏"
                 else "☎"
   return (Just status)
-
-
-myDzenCmd :: String
-myDzenCmd = 
-  "dzen2" 
-  ++ " -dock"
-  ++ " -ta r"
-  ++ " -fn Cozette:size=10:style=Bold"
-  ++ " -bg #000000"
 
 
 -- ========== WORKSPACES =======
@@ -109,8 +108,8 @@ myLayouts =
     defaultLayout
 
 codeLayouts =
-      tempCombo
-  ||| Full
+      magnifiercz' 1.3 (ResizableThreeCol 1 (3/100) (3/5) [])
+  ||| noBorders Full
 
 webLayouts =
       Accordion
@@ -137,22 +136,6 @@ meinKreis =
                , cDelta = 2.2*pi/4
                })
 
-tempCombo =
-  renamed [CutWordsLeft 10, Replace "weirdCombo"] $
-    magnifiercz' 1.3 ( combineTwoP
-      (TwoPane (3/100) (3/5)) (Full)
-        (tabbedBottom shrinkText myTabConfig)
-            (ClassName "librewolf")
-      )
-    
-myTabConfig = def {
-    activeColor = "#000000"
-  , inactiveColor = "#000000"
-  , activeTextColor = "#FFFFFF"
-  , inactiveTextColor = "#a2a2a2"
-  , inactiveBorderColor = "#a2a2a2"
-  , fontName = "Cozette"
-}
 
 -- ========= STARTUP HOOK =========
 myStartupHook = do
@@ -176,7 +159,7 @@ myManageHook = composeAll
   [ isDialog --> doFloat
   , className =? "Peek" --> doFloat
   , className =? "Xmessage" --> doCenterFloat
-  , className =? "dzen2" --> doIgnore
+  , className =? "dzen2" --> doIgnore -- ignore border
   , title =? "wpp" --> doIgnore -- ignore wallpaper
   ]
   <+> insertPosition Below Newer
@@ -216,7 +199,7 @@ utilityKeybs = [
   -- screen lock
   , ("<XF86ScreenSaver>", spawn "xtrlock")
   -- dmenu
-  , ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette-10")
+  , ("M-p", spawn "dmenu_run -sb '#ffffff' -sf '#000000' -fn Cozette:bold:size=10")
   , ("<XF86AudioLowerVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%-")
   , ("<XF86AudioRaiseVolume>", spawn "wpctl set-volume @DEFAULT_AUDIO_SINK@ 20%+")
   , ("<XF86AudioMute>", spawn "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
@@ -250,6 +233,7 @@ myRemovedKeys = [
 
 moveAndFollow ws = 
   windows (W.shift ws)
+
 
 -- ++++++++++ CONFIGURATION +++++++++
 myConfig dzen = def
