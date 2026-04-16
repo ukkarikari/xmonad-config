@@ -12,6 +12,9 @@ import XMonad.Actions.GridSelect
 import XMonad.Layout.Renamed
 import XMonad.Layout.PerWorkspace
 import XMonad.Layout.Grid
+import XMonad.Layout.ResizableTile
+import XMonad.Layout.MultiDishes
+import XMonad.Layout.IfMax
 -- utils
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Magnifier
@@ -54,15 +57,15 @@ myDzenCmd =
   ++ " -ta r"
   ++ " -fn Cozette:bold:size=10"
   ++ " -bg #000000"
+  ++ " -fg #ffffff"
 
 
 -- ---------- pretty printer ----------
 myPP h = def
   { ppOutput = hPutStrLn h
-  , ppOrder = \(ws:l:t:ex) -> [t, l, ws] ++ ex
+  , ppOrder = \(ws:l:t:ex) -> [t, ws] ++ ex
   , ppCurrent = dzenColor "#000000" "#f9f9f9" . wrap " " " "
   , ppHidden = wrap " " " "
-  , ppTitle = dzenColor "#000000" "#f9f9f9" . wrap " " " "
   , ppSep = " "
   , ppExtras = [ myCommand, myVolume, mySpace ]
   }
@@ -93,6 +96,7 @@ myWorkspaces :: [WorkspaceId]
 myWorkspaces = 
   [ "code"
   , "web"
+  , "code2"
   , "chat"
   , "sys"
   ]
@@ -103,17 +107,22 @@ myLayouts =
   avoidStruts $
     onWorkspace "code"  codeLayouts $
     onWorkspace "web"  webLayouts $
+    onWorkspace "code2"  codeLayouts $
     onWorkspace "sys"   sysLayouts $   
     onWorkspace "chat"   chatLayouts $   
     defaultLayout
 
 codeLayouts =
-      magnifiercz' 1.3 (ResizableThreeCol 1 (3/100) (3/5) [])
-  ||| noBorders Full
+      noBorders Full
+  ||| ( IfMax 2 (magnifiercz' 1.3 ( ResizableTall 1 (3/100) (3/5) [])) $
+         IfMax 3 (maximizeVertical ( MultiDishes 2 3 (1/8))) $
+           maxMagnifierOff Grid
+          )
+  
 
 webLayouts =
       Accordion
-  ||| Mirror Accordion
+--  ||| Mirror Accordion
 
 sysLayouts =
       meinKreis
@@ -179,8 +188,8 @@ windowKeybs = [
   , ("M-a", sendMessage MirrorExpand)
 
   -- mafnifier keys
-  , ("M-S-=", sendMessage Toggle)
-  , ("M-=", sendMessage MagnifyMore)
+  , ("M-=", sendMessage Toggle)
+  , ("M-S-=", sendMessage MagnifyMore)
   , ("M--", sendMessage MagnifyLess)
 
   -- scratchpad thning
@@ -215,6 +224,8 @@ workspaceKeybs = [
   , ("M-S-1", windows (W.shift "code"))
   , ("M-2", windows $ W.greedyView "web")
   , ("M-S-2", windows (W.shift "web"))
+  , ("M-3", windows $ W.greedyView "code2")
+  , ("M-S-3", windows (W.shift "code2"))
   , ("M-7", windows $ W.greedyView "chat")
   , ("M-S-7", windows (W.shift "chat"))
   , ("M-8", windows $ W.greedyView "sys")
@@ -224,7 +235,6 @@ workspaceKeybs = [
 myRemovedKeys = [
     "M-S-q" --disable default exit
   , "M-p"   --disable default dmenu
-  , "M-3", "M-S-3"
   , "M-4", "M-S-4"
   , "M-5", "M-S-5"
   , "M-6", "M-S-6"
@@ -251,3 +261,4 @@ myConfig dzen = def
   }
   `removeKeysP` myRemovedKeys
   `additionalKeysP` myKeybs
+

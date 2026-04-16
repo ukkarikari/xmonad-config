@@ -19,6 +19,13 @@
  - [x] reading + notes layout
  - [ ] make proper compositor config 
  - [ ] fix wallpaper code 
- - [ ] add xresources?
- - [ ] grid layout with custom keybind to toggle magnifier
+ - [x] add xresources?
+ - [x] grid layout with custom keybind to toggle magnifier
  - [x] dzen bar basic
+ - [ ] monitor https://hackage-content.haskell.org/package/xmonad-contrib-0.18.2/docs/XMonad-Layout-Monitor.html
+
+ # --- configs ---
+ - .Xresources
+ - .xprofile
+ - .redshift config
+ - .picom-config
