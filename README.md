@@ -23,6 +23,8 @@
  - [x] grid layout with custom keybind to toggle magnifier
  - [x] dzen bar basic
  - [ ] monitor https://hackage-content.haskell.org/package/xmonad-contrib-0.18.2/docs/XMonad-Layout-Monitor.html
+ - [ ] theme for prompt
+ - [ ] rdp layout
 
  # --- configs ---
  - .Xresources
