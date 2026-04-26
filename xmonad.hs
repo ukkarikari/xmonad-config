@@ -122,8 +122,8 @@ codeLayouts =
         )
 
 webLayouts =
-    tabbedBottom shrinkText myTabTheme  
---    ||| simpleFloat
+    noBorders (tabbedBottom shrinkText myTabTheme) 
+    ||| simpleFloat
 
 sysLayouts =
   meinKreis
