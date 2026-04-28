@@ -11,6 +11,7 @@ import XMonad.Hooks.InsertPosition
 import XMonad.Hooks.ManageDocks
 import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.StatusBar
+import XMonad.Hooks.RefocusLast
 import XMonad.Layout.Accordion
 import XMonad.Layout.CircleEx
 import XMonad.Layout.Gaps
@@ -37,7 +38,6 @@ import XMonad.Prompt.Pass
 import XMonad.Prompt.Workspace
 import Config.GridSelect
 
-
 -- ++++++++++ MAIN +++++++++++
 main :: IO ()
 main = do
@@ -46,7 +46,6 @@ main = do
   xmonad
     . docks
     . ewmh
-    -- . xmobarProp
     $ myConfig dzen
 
 -- ========= PRETTY PRINTER and DZEN  =========
@@ -269,7 +268,12 @@ myConfig dzen =
       layoutHook = myLayouts,
       manageHook = myManageHook <+> manageDocks <+> manageHook def,
       startupHook = myStartupHook,
-      logHook = dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0),
+      logHook =
+        refocusLastLogHook
+        <> dynamicLogWithPP (myPP dzen) >> updatePointer (0.5, 0.5) (0, 0),
+      handleEventHook =
+        refocusLastWhen (pure True)
+        <> handleEventHook def,
       workspaces = myWorkspaces,
       focusFollowsMouse = False,
       terminal = "urxvt",
